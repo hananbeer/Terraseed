@@ -1,10 +1,25 @@
-import './ethers.min.js';
+import './ethers.min.js'
+
+let hotspots = [
+  [41.3029236547479, -81.90172671882485, 18, 180, 'Heart Shaped Pond'],
+  [32.149989, -110.835842, 16, 0, 'Airplane Boneyard'],
+  [33.74530331426388, -112.63354277069905, 16, 0, 'Illuminati Confirmed'],
+  [37.56385880821481, -116.85115487129893, 18, 0, 'The first Target store location'],
+  [43.645343801626325, -115.99327152315541, 19, 45, 'At least someone does...'],
+  [51.848637, -0.55462, 18, 45, 'Rawrrr'],
+  [51.60123998076211, 4.306147257762201, 18, 0, 'Planet with a star'],
+  [37.62811748128279, -116.84847238984662, 18, 0, 'Illuminati Confirmed'],
+  [-18.52912048729838, -70.24977003674333, 20, 0, 'Stop littering!'],
+  [37.401573, -116.867808, 18, 0, 'Sun on Earth'],
+  [35.027185, -111.022388, 16, 0, 'Meteor Crater'],
+  [44.525049, -110.83819, 19, 0, 'Natural Art'],
+  [26.35806896984001, 127.78381878059906, 20, 70, 'Na na na...']
+]
 
 function devAPI() {
     let el = document.querySelector('img[src="https://maps.gstatic.com/mapfiles/api-3/images/google_gray.svg"]')
     if (!el) {
         setTimeout(devAPI, 10)
-        console.log('...')
         return
     }
     
@@ -17,46 +32,52 @@ function locationKey(lat, lng, decimals=4, password='') {
   return key
 }
 
+function generateKeys(lat, lng) {
+  let keys = []
+  for (let i = 0; i <= 4; i++) {
+    keys.push(locationKey(lat, lng, i, document.getElementById('el_password').value))
+  }
+  return keys
+}
+
+function keysToText(keys) {
+  return keys.map((key, idx) => `<span style="color: ${key == prevKeys[idx] ? 'gray' : 'green'}">level ${idx}: ${key}</span>`).join('<br />')
+}
+
 let prevKeys = []
 let map = null
 function initMap() {
-  const myLatlng = { lat: 41.3029236547479, lng: -81.90172671882485 };
+  let idx = (Math.random() * hotspots.length) | 0
+  let [lat, lng, zoom, heading, desc] = hotspots[idx]
+  const myLatlng = { lat, lng }
   map = new google.maps.Map(document.getElementById("map"), {
-    zoom: 18,
+    zoom,
     center: myLatlng,
-    heading: 180,
+    heading,
     mapTypeId: 'hybrid'
-  });
+  })
 
-  // Create the initial InfoWindow.
+  prevKeys = generateKeys(lat, lng)
   let infoWindow = new google.maps.InfoWindow({
-    content: '<div style="text-align: center">Ethereum key for this location:<br />0x493090921ddfa7dbd42497cf19941b968aad2930cce25111921f5777ca2965c7<br /><br />Go hide your keys on Earth!</div>',
+    content: `<div style="text-align: center"><h1>${desc}</h1>Ethereum key for this location:<br />${locationKey(lat, lng)}<br /><br /><i>Go hide your keys on Earth!</i></div>`,
     position: myLatlng,
-  });
+  })
 
-  infoWindow.open(map);
-  // Configure the click listener.
+  infoWindow.open(map)
   map.addListener("click", (mapsMouseEvent) => {
-    // Close the current InfoWindow.
-    infoWindow.close();
-    // Create a new InfoWindow.
+    infoWindow.close()
     infoWindow = new google.maps.InfoWindow({
       position: mapsMouseEvent.latLng,
-    });
-    
-    let keys = []
-    let lat = mapsMouseEvent.latLng.lat()
-    let lng = mapsMouseEvent.latLng.lng()
-    for (let i = 0; i <= 4; i++) {
-      keys.push(locationKey(lat, lng, i, document.getElementById('el_password').value))
-    }
+    })
+
+    let keys = generateKeys(mapsMouseEvent.latLng.lat(), mapsMouseEvent.latLng.lng())
     infoWindow.setContent(
-        keys.map((key, idx) => `<span style="color: ${key == prevKeys[idx] ? 'gray' : 'green'}">level ${idx}: ${key}</span>`).join('<br />')
-    );
-    infoWindow.open(map);
+      keysToText(keys)
+    )
+    infoWindow.open(map)
 
     prevKeys = keys
-  });
+  })
 
   setTimeout(devAPI, 10)
 }
@@ -74,4 +95,4 @@ window.addEventListener('pointerdown', onPointerEvent)
 window.addEventListener('wheel', onPointerEvent)
 
 
-window.initMap = initMap;
+window.initMap = initMap
