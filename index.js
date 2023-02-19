@@ -11,6 +11,13 @@ function devAPI() {
     el.parentElement.parentElement.remove()
 }
 
+function locationKey(lat, lng, decimals=4, password='') {
+  let seed = lat.toFixed(decimals) + ',' + lng.toFixed(decimals) + password
+  let key = ethers.utils.solidityKeccak256(['string'], [seed])
+  return key
+}
+
+let prevKeys = []
 let map = null
 function initMap() {
   const myLatlng = { lat: 41.3029236547479, lng: -81.90172671882485 };
@@ -37,12 +44,18 @@ function initMap() {
       position: mapsMouseEvent.latLng,
     });
     
-    let seed = mapsMouseEvent.latLng.lat().toFixed(4) + ',' + mapsMouseEvent.latLng.lng().toFixed(4) + document.getElementById('el_password').value
-    let key = ethers.utils.solidityKeccak256(['string'], [seed])
+    let keys = []
+    let lat = mapsMouseEvent.latLng.lat()
+    let lng = mapsMouseEvent.latLng.lng()
+    for (let i = 0; i <= 4; i++) {
+      keys.push(locationKey(lat, lng, i, document.getElementById('el_password').value))
+    }
     infoWindow.setContent(
-        key
+        keys.map((key, idx) => `<span style="color: ${key == prevKeys[idx] ? 'gray' : 'green'}">level ${idx}: ${key}</span>`).join('<br />')
     );
     infoWindow.open(map);
+
+    prevKeys = keys
   });
 
   setTimeout(devAPI, 10)
