@@ -16,16 +16,6 @@ let hotspots = [
   [26.35806896984001, 127.78381878059906, 20, 70, 'Na na na...']
 ]
 
-function devAPI() {
-    let el = document.querySelector('img[src="https://maps.gstatic.com/mapfiles/api-3/images/google_gray.svg"]')
-    if (!el) {
-        setTimeout(devAPI, 10)
-        return
-    }
-    
-    el.parentElement.parentElement.remove()
-}
-
 function locationKey(lat, lng, decimals=4, password='') {
   let seed = lat.toFixed(decimals) + ',' + lng.toFixed(decimals) + password
   let key = ethers.utils.solidityKeccak256(['string'], [seed])
@@ -59,7 +49,7 @@ function initMap() {
 
   prevKeys = generateKeys(lat, lng)
   let infoWindow = new google.maps.InfoWindow({
-    content: `<div style="text-align: center"><h1>${desc}</h1>Ethereum key for this location:<br />${locationKey(lat, lng)}<br /><br /><i>Go hide your keys on Earth!</i></div>`,
+    content: `<div style="text-align: center"><h3>${desc}</h3>Ethereum key for this location:<br />${locationKey(lat, lng)}<br /><br /><i>Go hide your keys on Earth!</i></div>`,
     position: myLatlng,
   })
 
@@ -70,16 +60,16 @@ function initMap() {
       position: mapsMouseEvent.latLng,
     })
 
-    let keys = generateKeys(mapsMouseEvent.latLng.lat(), mapsMouseEvent.latLng.lng())
+    let _lat = mapsMouseEvent.latLng.lat()
+    let _lng = mapsMouseEvent.latLng.lng()
+    let keys = generateKeys(_lat, _lng)
     infoWindow.setContent(
-      keysToText(keys)
+      `<p>${_lat}, ${_lng}</p>` + keysToText(keys)
     )
     infoWindow.open(map)
 
     prevKeys = keys
   })
-
-  setTimeout(devAPI, 10)
 }
 
 let timer = null
