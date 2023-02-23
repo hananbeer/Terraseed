@@ -1,0 +1,22 @@
+<html>
+  <head>
+    <title>War Wide Web 3</title>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=default"></script>
+    <link rel="stylesheet" type="text/css" href="./style.css" />
+    <script src="./boring_stuff.js"></script>
+    <script>
+      function onMapsLoad() {
+        // hacks to hack the hecking hecklers
+        let script = document.createElement('script')
+        script.type = 'module'
+        script.src = './overlay.js'
+        document.head.appendChild(script)
+      }
+    </script>
+    <script defer src="https://maps.googleapis.com/maps/api/js?key=&callback=onMapsLoad&v=weekly"></script>
+    <!-- <script defer src="./overlay.js"></script> -->
+  </head>
+  <body>
+    <div id="map"></div>
+  </body>
+</html>
