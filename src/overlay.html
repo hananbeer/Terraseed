@@ -1,0 +1,58 @@
+<html>
+  <head>
+    <title>War Wide Web 3</title>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=default"></script>
+    <link rel="stylesheet" type="text/css" href="./style.css" />
+    <script src="./boring_stuff.js"></script>
+    <script src="./ethers.min.js" type="module"></script>
+    <script>
+      function onMapsLoad() {
+        // hacks to hack the hecking hecklers
+        let script = document.createElement('script')
+        script.type = 'module'
+        script.src = './overlay.js'
+        document.head.appendChild(script)
+
+        document.getElementById('formId').addEventListener("submit", formSubmit);
+      }
+
+      function formSubmit(event) {
+        debugger
+        var url = "/upload";
+        var request = new XMLHttpRequest();
+        request.open('POST', url, true);
+        request.onload = function() { // request successful
+        // we can use server response to our request now
+          console.log(request.responseText);
+        };
+
+        request.onerror = function() {
+          // request failed
+        };
+
+        debugger
+        request.send(new FormData(this.files[0])); // create FormData from form that triggered event
+        // event.preventDefault();
+      }
+
+      // and you can attach form submit event like this for example
+      function attachFormSubmitEvent(formId){
+        document.getElementById(formId).addEventListener("submit", formSubmit);
+      }
+    </script>
+    <script defer src="/maps_api.js?key=&callback=onMapsLoad&v=weekly"></script>
+    <!-- <script defer src="./overlay.js"></script> -->
+  </head>
+  <body>
+    <div id="all_containers">
+      <div>
+        <form method="POST" id="formId" action="/upload" target="_blank" style="position: absolute; z-index: 999; background: white" enctype="multipart/form-data">
+          <label for="avatar">pfp:</label>
+          <input type="file" id="avatar" name="avatar" accept="image/png; image/jpeg; image/webp" enctype="multipart/form-data">
+          <input type="button" value="upload" onclick="formSubmit(this)">
+        </form>
+      </div>
+      <div id="map"></div>
+    </div>
+  </body>
+</html>
