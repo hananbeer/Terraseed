@@ -1,18 +1,20 @@
-export const r_earth = 6378000
+// approx. the size of the united state, minus alaska
+export const MAX_RADIUS = 2500000
 
+export const radius_earth = 6378000
 
 export function addDistance(latLng, dx, dy) {
-  let new_latitude  = latLng.lat()  + (dy / r_earth) * (180 / Math.PI);
-  let new_longitude = latLng.lng() + (dx / r_earth) * (180 / Math.PI) / Math.cos(latLng.lat() * Math.PI / 180);
+  let new_latitude  = latLng.lat()  + (dy / radius_earth) * (180 / Math.PI);
+  let new_longitude = latLng.lng() + (dx / radius_earth) * (180 / Math.PI) / Math.cos(latLng.lat() * Math.PI / 180);
 
   return new google.maps.LatLng(new_latitude, new_longitude)
 }
 
-
-
-
-
-
+const emojis = ['🚀','💥','☄️','🧊','🔥','🫶','🥹','✌️','✅','❎','❌']
+function random_emoji() {
+  const idx = Math.random()  * emojis.length | 0
+  return emojis[idx]
+}
 
 /**
  * The custom USGSOverlay object contains the USGS image,
@@ -34,7 +36,7 @@ export class PlayerOverlay extends google.maps.OverlayView {
     this.marker = new google.maps.Marker({
       map,
       title: image.split('.')[0] + ' ' + id,
-      label: image.split('.')[0] + ' ' + id,
+      label: random_emoji() // + id,
     })
 
     this.image = image
@@ -52,7 +54,7 @@ export class PlayerOverlay extends google.maps.OverlayView {
 
   setRadius(radius) {
     // stupid formula that seems to work
-    let max_radius = 10000000 / Math.max(1, (Math.abs(this.center.lat())+30) / 30)
+    let max_radius = MAX_RADIUS // 5000000 / Math.max(1, (Math.abs(this.center.lat()) + 30) / 30)
     
     // old formula
     //let max_radius = 5000000 / Math.max(1, Math.abs(this.center.lat()) / 25)
@@ -60,7 +62,8 @@ export class PlayerOverlay extends google.maps.OverlayView {
     // fixed radius but different visual sizes
     //let max_radius = 2000000
 
-    this.radius = Math.min(radius, max_radius)
+    radius = Math.min(radius, max_radius)
+    this.radius = radius
 
     // update marker position
     this.marker.setPosition(addDistance(this.center, 0, this.radius))
@@ -152,6 +155,10 @@ export class PlayerOverlay extends google.maps.OverlayView {
         //delete this.marker
     }
   }
+
+  remove() {
+    this.setMap(null)
+  }
 }
 
 
@@ -164,7 +171,7 @@ const DIFFICULTY_DEN = BigInt(100000)
 
 // wut
 function earthDistance(lat1, lng1, lat2, lng2) {
-  const R = r_earth
+  const R = radius_earth
   const φ1 = lat1 * Math.PI / 180 // φ, λ in radians
   const φ2 = lat2 * Math.PI / 180
   const Δφ = (lat2-lat1) * Math.PI / 180
@@ -187,7 +194,7 @@ function earthDistance_2(lat1, lng1, lat2, lng2) {
       Math.sin(lat1) * Math.sin(lat2)
       +
       Math.cos(lat1) * Math.cos(lat2) * Math.cos(lng2 - lon1)
-    ) * r_earth
+    ) * radius_earth
 }
 
 function hex64(bi) {
