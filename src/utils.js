@@ -22,14 +22,17 @@ export class PlayerOverlay extends google.maps.OverlayView {
   center;
   image;
   div;
-  constructor(map, center, radius, image) {
+  id;
+
+  constructor(map, center, radius, image, id) {
     super()
-    
+  
+    this.id = id
     this.map = map
     
     this.marker = new google.maps.Marker({
       map,
-      title: "Belle",
+      title: image.split('.')[0] + ' ' + id,
     })
 
     this.image = image
@@ -49,7 +52,7 @@ export class PlayerOverlay extends google.maps.OverlayView {
 
   setRadius(radius) {
     // stupid formula that seems to work
-    let max_radius = 5000000 / Math.max(1, (Math.abs(this.center.lat())+30) / 30)
+    let max_radius = 10000000 / Math.max(1, (Math.abs(this.center.lat())+30) / 30)
     // old formula
     //let max_radius = 5000000 / Math.max(1, Math.abs(this.center.lat()) / 25)
     // fixed radius but different visual sizes
@@ -65,6 +68,11 @@ export class PlayerOverlay extends google.maps.OverlayView {
       addDistance(this.center, -radius, -radius),
       addDistance(this.center, radius, radius)
     )
+
+    // FUCKING JAVASCRIPT THIS WILL RE-RENDER THE CSS ANIMATIONS
+    if (this.div) {
+        this.div.style.borderColor = 'green'
+    }
   }
 
   /**
@@ -136,6 +144,15 @@ export class PlayerOverlay extends google.maps.OverlayView {
       this.div.parentNode.removeChild(this.div);
       delete this.div;
     }
+
+    if (this.marker) {
+        this.marker.setMap(null)
+        this.marker.setMap(null)
+        this.marker.setMap(null)
+        this.marker.setMap(null)
+        this.marker.setMap(null)
+        // delete this.marker
+    }
   }
   /**
    *  Set the visibility to 'hidden' or 'visible'.
@@ -168,3 +185,83 @@ export class PlayerOverlay extends google.maps.OverlayView {
   // }
 }
 
+
+
+
+
+const DIFFICULTY_NUM = BigInt(1000)
+const DIFFICULTY_DEN = BigInt(100000)
+
+function earthDistance2(lat1, lng1, lat2, lng2) {
+  const R = r_earth
+  const φ1 = lat1 * Math.PI / 180; // φ, λ in radians
+  const φ2 = lat2 * Math.PI / 180;
+  const Δφ = (lat2-lat1) * Math.PI / 180;
+  const Δλ = (lng2-lng1) * Math.PI / 180;
+
+  const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+            Math.cos(φ1) * Math.cos(φ2) *
+            Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+  const d = R * c; // in metres
+
+  return d
+}
+
+function earthDistance(lat1, lng1, lat2, lng2) {
+  return
+    Math.acos(
+      Math.sin(lat1) * Math.sin(lat2)
+      +
+      Math.cos(lat1) * Math.cos(lat2) * Math.cos(lng2 - lon1)
+    ) * r_earth
+}
+
+export function canDevour(eater, players) {
+  let eaten = []
+  for (let i in players) {
+    let player = players[i]
+    if (!player)
+        continue
+
+    if (eater == player)
+      continue
+    
+    let dist = earthDistance2(player.center.lat(), player.center.lng(), eater.center.lat(), eater.center.lng())
+    // console.log(dist)
+    // debugger
+    if (eater.radius > player.radius && dist < eater.radius * 1.5) {
+      console.log(`eater ${eater.id} can devour player ${player.id}`)
+      eaten.push(player)
+    }
+  }
+
+  return eaten
+}
+
+function hex64(bi) {
+  return '0x' + bi.toString(16).padStart(16, '0')
+}
+
+export function keccak256(seed) {
+  return ethers.utils.keccak256(hex64(seed))
+}
+
+function roll(player_id) {
+  let seed = (BigInt((Math.random() * 0x7fffffff) | 0) << BigInt(32)) | BigInt((Math.random() * 0x7fffffff) | 0)
+  let hash = keccak256(seed)
+  if (BigInt(hash) % ((BigInt(((player_id / 10) | 0) + 1) * DIFFICULTY_DEN)) < DIFFICULTY_NUM) {
+    return seed
+  }
+
+  return null
+}
+
+export function minePlayer(count=10) {
+  for (let i = 0; i < count; i++) {
+    let seed = roll(i)
+    if (seed)
+      return seed
+  }
+}

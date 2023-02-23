@@ -19,3 +19,13 @@ body {
 div[style*="z-index: 100"] {
     visibility: hidden;
 }
+
+.hover_fade {
+  border: 2px solid red;
+  opacity: 0.7;
+}
+
+
+/* .hover_fade:hover {
+  opacity: 0.3;
+} */

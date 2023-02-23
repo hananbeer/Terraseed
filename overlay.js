@@ -1,25 +1,43 @@
-import { addDistance, PlayerOverlay } from './src/utils.js'
+import * as utils from './src/utils.js'
 
 let images = [
   'beans.jpg',
-  'belle.jpg',
+  // 'belle.jpg',
   'brock.png',
   'dc.jpg',
   'de.jpg',
   'g.jpg',
   'j.jpg',
   'lib.jpg',
-  'mia.jpg',
+  // 'mia.jpg',
   'pc.jpg',
-  'sasha.webp',
+  // 'sasha.webp',
   'tae.png',
-  'vec.png'
+  'vec.png',
+  'pepe.webp',
+  'obama.jpg',
+  'leo.png',
+  'trumpepe.png',
+  'smol.jpg',
+  'kethic.jpg',
+  'cypher.png',
+  'boy.jpg',
+  'hacker.jpg',
+  'phil.png',
+  'paladin.jpg',
+  'vex.png',
+  '59.jpg',
+  '13.jpg',
+  'dump.jpg',
+  'riley.jpg',
+  'hb.png'
 ]
 
 // cannot change name wtf
 let map
 
 let is_moon = false
+let players = []
 
 // This example adds hide() and show() methods to a custom overlay's prototype.
 // These methods toggle the visibility of the container <div>.
@@ -30,9 +48,9 @@ function initMap() {
   let latLng = new google.maps.LatLng(lat, lng)
 
   map = new google.maps.Map(document.getElementById("map"), {
-    zoom: 2,
+    zoom: 2.5,
     center: { lat, lng },
-    mapTypeId: is_moon ? 'moon' : 'terrain',
+    mapTypeId: is_moon ? 'moon' : 'satellite',
   });
 
 
@@ -92,8 +110,6 @@ function initMap() {
     map.setMapTypeId("moon");
   }
 
-  let base_radius = 1000000
-
   // new google.maps.Marker({
   //   position: latLng,
   //   map,
@@ -101,24 +117,33 @@ function initMap() {
   // });
 
   // new google.maps.Marker({
-  //   position: addDistance(latLng, -radius, radius),
+  //   position: utils.addDistance(latLng, -radius, radius),
   //   map,
   //   title: "minus",
   // });
 
   // new google.maps.Marker({
-  //   position: addDistance(latLng, radius, -radius),
+  //   position: utils.addDistance(latLng, radius, -radius),
   //   map,
   //   title: "plus",
   // });
 
   
-  for (let i = 0; i < 50; i++) {
-    let image = './pics/' + images[(Math.random() * images.length) | 0]
-    const overlay = new PlayerOverlay(map, addDistance(latLng, (Math.random()*2-1) * 50000000, (Math.random()*2-1) * 7000000), base_radius / 4 * (1 + Math.random() * 3), image);
-    overlay.setMap(map);
-  }
+  let base_radius = 1000000
 
+  // for (let i = 0; i < 50; i++) {
+    // const image = './pics/' + images[(Math.random() * images.length) | 0]
+  for (let i = 0; i < images.length * 3; i++) {
+    let image = './pics/' + images[(i / 3) | 0]
+    const dx = (Math.random()*2-1) * 50000000
+    const dy = (Math.random()*2-1) * 7000000
+    const pos = utils.addDistance(latLng, dx, dy)
+    const radius = base_radius / 4 * (1 + Math.random() * 3)
+    const overlay = new utils.PlayerOverlay(map, pos, radius, image, i)
+    overlay.setMap(map)
+    players.push(overlay)
+  }
+  
   // const toggleButton = document.createElement("button");
   // toggleButton.textContent = "Toggle";
   // toggleButton.classList.add("custom-map-control-button");
@@ -136,6 +161,32 @@ function initMap() {
   // map.controls[google.maps.ControlPosition.TOP_RIGHT].push(toggleDOMButton);
   // map.controls[google.maps.ControlPosition.TOP_RIGHT].push(toggleButton);
 
+  setInterval(minePlayers, 50)
+}
+
+
+function minePlayers() {
+  for (let i = 0; i < players.length; i++) {
+    let player = players[i]
+    if (!player)
+      continue
+
+    let seed = utils.minePlayer()
+    if (seed) {
+      //console.log(seed, utils.keccak256(seed))
+      player.setRadius((player.radius * 1.05)) // | 0)
+
+      let eaten_players = utils.canDevour(player, players)
+      if (eaten_players) {
+        for (let eaten of eaten_players) {
+          players[eaten.id].setMap(null)
+          players[eaten.id] = null
+
+        }
+      }
+    }
+    // break
+  }
 }
 
 initMap()
